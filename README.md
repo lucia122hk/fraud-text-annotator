@@ -22,6 +22,10 @@ A multi‑label fraud annotation toolkit for social media and news texts. It pro
     │   ├── TimeLabel.ipynb
     │   ├── datacleaning.ipynb
     │   └── human_human_llm_consistency.ipynb
+    ├── sample_data/
+    │   ├── sample_data_of_raw_dataset
+    │   ├── sample_data_for_batch_annotation
+    │   └── labeled_data_sample_for_analysis/
     └── web_app/
         ├── backend/
         ├── frontend
@@ -30,6 +34,20 @@ A multi‑label fraud annotation toolkit for social media and news texts. It pro
         ├── README.md
         └── requirements.txt/
         
+## Sample Data
+
+To facilitate reproducibility and testing, the repository includes three sample data folders (each contains only a small number of rows, not the full datasets):
+
+- **`sample_data_of_raw_dataset/`**  
+  Contains the first 10 rows of the original raw datasets (posts and news) **before any cleaning or annotation**. These files preserve the original column structure (e.g., `content`, `platform`, `post_time`, `title`, `country`) and are provided to illustrate the input format.
+
+- **`sample_data_for_batch_annotation/`**  
+  Contains small CSV files with only two columns: `sample_id` and `text_content`. These are designed for testing the batch annotation pipelines (`16Label.ipynb` and `TimeLabel.ipynb`) without processing the full dataset. Users can replace these with their own data.
+
+- **`labeled_data_sample_for_analysis/`**  
+  Contains the first 10 rows of the **final labelled datasets** after automated annotation. Each row includes the original text metadata, the 16‑label binary vector (G1..C5, OT, NS), and the temporal sequence field (if applicable). This sample allows users to preview the output format before running the full annotation process.
+
+All sample files are for demonstration only. Full datasets are not included in this public repository due to size and privacy considerations.
 
 ## Getting Started
 
