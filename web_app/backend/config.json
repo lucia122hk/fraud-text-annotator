@@ -1,0 +1,12 @@
+{
+  "llm1_api_key": "sk-00cd60a5bd8e4217966908558b067a85",
+  "llm1_api_url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "llm1_model": "qwen-plus",
+  "llm2_api_key": "sk-00cd60a5bd8e4217966908558b067a85",
+  "llm2_api_url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "llm2_model": "qwen-turbo",
+  "temperature": 0.1,
+  "max_retries": 3,
+  "max_iterations": 3,
+  "target_accuracy": 0.95
+}

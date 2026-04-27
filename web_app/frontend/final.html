@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraud Text Annotation System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 300px;
+            background-color: #ffffff;
+            border-right: 1px solid #e0e0e0;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 32px;
+            color: #1a1a1a;
+        }
+        h2 {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #333;
+        }
+        h3 {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: #495057;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #495057;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+            background: white;
+            color: #333;
+        }
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            width: 100%;
+            margin-top: 8px;
+        }
+        button:hover {
+            background-color: #0069d9;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            margin-bottom: 32px;
+            position: relative;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 2;
+            position: relative;
+        }
+        .step.active .step-number {
+            background-color: #007bff;
+            color: white;
+        }
+        .step.completed .step-number {
+            background-color: #28a745;
+            color: white;
+        }
+        .step-label {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .step.active .step-label {
+            color: #007bff;
+            font-weight: 500;
+        }
+        .step.completed .step-label {
+            color: #28a745;
+        }
+        .step-line {
+            position: absolute;
+            top: 16px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #e0e0e0;
+            z-index: 1;
+        }
+        .step-line.completed {
+            background-color: #007bff;
+        }
+        .text-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            resize: vertical;
+            font-family: inherit;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        .text-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        .file-upload {
+            margin: 16px 0;
+        }
+        .drop-zone {
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin: 16px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .drop-zone:hover {
+            border-color: #007bff;
+            background-color: #f8f9ff;
+        }
+        .drop-zone.active {
+            border-color: #28a745;
+            background-color: #f8fff8;
+        }
+        .drop-zone-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .drop-zone-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        .drop-zone-text {
+            font-size: 16px;
+            margin: 0 0 8px 0;
+            color: #333;
+        }
+        .drop-zone-subtext {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 32px;
+            color: #6c757d;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #007bff;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .progress-text {
+            font-size: 14px;
+            color: #6c757d;
+            text-align: center;
+        }
+        .results {
+            margin-top: 32px;
+        }
+        .result-item {
+            margin-bottom: 16px;
+            padding: 16px;
+            background-color: white;
+            border-left: 4px solid #007bff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .result-item strong {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        .label {
+            display: inline-block;
+            margin: 4px 4px 4px 0;
+            padding: 4px 12px;
+            background-color: #e9ecef;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        code {
+            background-color: #f1f3f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 13px;
+        }
+        .format-note {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 8px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+        }
+        .preview-note {
+            font-size: 14px;
+            color: #6c757d;
+            margin: 16px 0;
+            text-align: center;
+        }
+        .toggle-button {
+            background-color: #f8f9fa;
+            color: #007bff;
+            border: 1px solid #007bff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        .toggle-button:hover {
+            background-color: #e3f2fd;
+        }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 24px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .modal-header h2 {
+            margin: 0;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: #000;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 24px;
+            justify-content: flex-end;
+        }
+        .modal-buttons button {
+            width: auto;
+        }
+        .cancel-button {
+            background-color: #6c757d;
+        }
+        .cancel-button:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-content">
+                <h1>Annotation System</h1>
+                
+                <div class="card">
+                    <h2>API Configuration</h2>
+                    <div class="form-group">
+                        <label for="apiKey">API Key:</label>
+                        <input type="text" id="apiKey" placeholder="Enter API Key">
+                    </div>
+                    <div class="form-group">
+                        <label for="apiUrl">API URL:</label>
+                        <input type="text" id="apiUrl" value="https://dashscope.aliyuncs.com/compatible-mode/v1">
+                    </div>
+                    <div class="form-group">
+                        <label for="modelName">Model Name:</label>
+                        <input type="text" id="modelName" value="qwen-plus">
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="saveConfig()" style="flex: 1;">Save Configuration</button>
+                        <button onclick="clearConfig()" style="flex: 1; background-color: #dc3545;">Clear Cache</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2>Prompt Configuration</h2>
+                    <button class="toggle-button" onclick="openPromptModal()">View/Edit Prompt</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="step-indicator">
+                <div class="step-line" id="stepLine"></div>
+                <div class="step active" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Input Data</div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Processing</div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Results</div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 24px; margin-bottom: 24px;">
+                <div class="card" id="inputSection" style="flex: 1;">
+                    <h2>Input Fraud Text</h2>
+                    <textarea class="text-input" id="textInput" placeholder="Enter fraud-related text here..."></textarea>
+                    <br>
+                    <button onclick="annotateText()">Start Annotation</button>
+                </div>
+                
+                <div class="card" style="flex: 1;">
+                    <h2>Or Upload Text File</h2>
+                    <div class="file-upload">
+                        <div style="position: relative; display: inline-block;">
+                            <input type="file" id="fileInput" accept=".csv,.xlsx" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+                            <button type="button" style="background-color: #f8f9fa; color: #333; border: 1px solid #e0e0e0; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;">Choose File</button>
+                            <span id="fileLabel" style="margin-left: 10px; font-size: 14px; color: #6c757d;">No file selected</span>
+                        </div>
+                        <script>
+                            document.getElementById('fileInput').addEventListener('change', function(e) {
+                                const fileLabel = document.getElementById('fileLabel');
+                                if (e.target.files.length > 0) {
+                                    fileLabel.textContent = e.target.files[0].name;
+                                } else {
+                                    fileLabel.textContent = 'No file selected';
+                                }
+                            });
+                        </script>
+                        <button onclick="uploadFile()">Upload and Annotate</button>
+                        <div class="format-note">
+                            <strong>File Format Requirements:</strong><br>
+                            - Supported formats: CSV, Excel (.xlsx)<br>
+                            - First column should contain the text content<br>
+                            - Maximum 20000 rows per file
+                        </div>
+                        <div id="dropZone" class="drop-zone">
+                            <div class="drop-zone-content">
+                                <div class="drop-zone-icon">📁</div>
+                                <p class="drop-zone-text">Drag and drop CSV or Excel file here</p>
+                                <p class="drop-zone-subtext">Supports .csv and .xlsx formats</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div id="progressSection" style="display: none;">
+                    <h3>Processing...</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">0%</div>
+                </div>
+                <div id="loadingText">Processing, please wait...</div>
+            </div>
+            
+            <div class="results" id="resultsSection" style="display: none;">
+                <h2>Annotation Results</h2>
+                <div class="preview-note" id="previewNote"></div>
+                <div id="resultsList"></div>
+                <button onclick="downloadResults()" id="downloadBtn" disabled>Download Results</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Prompt Modal -->
+    <div id="promptModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Prompt Configuration</h2>
+                <span class="close" onclick="closePromptModal()">&times;</span>
+            </div>
+            <div class="form-group">
+                <label for="annotationPrompt">Annotation Prompt:</label>
+                <textarea id="annotationPrompt" style="min-height: 500px;">你是严谨的诈骗分类标注助手，严格按规则判断每个标签是否存在（0=不存在，1=存在），输出简体中文，不主观发挥。
+
+首先判断以下文本是否描述了诈骗行为(行为人虚构事实或隐瞒真相 + 受害方错误认识 + 主动处分财产,未遂也算。）若非诈骗，16标签项全部输出0。若为诈骗，首先判断是否信息不全，如果没有任何手法描述，判定为信息不足，第16个标签S填写1(此时通常前15项都为0)，否则填写0。若非信息不全，那么请根据以下文本，判断下列16个标签是否存在。标签顺序及定义如下：
+
+1. G1 财富诱饵：承诺高回报、中奖、免费送、稳赚不赔等直接金钱利益。
+2. G2 关系诱饵：以新建立的关系（如网友、新认识的恋人） 出现，承诺获利。
+3. G3 机会诱饵：提供内部名额、高薪兼职、限量抢购等稀缺机会。
+4. L1 安全诱饵：威胁账户异常、设备中毒、信息泄露等。
+5. L2 财产诱饵：威胁欠费逾期、影响征信、法院传票、罚款等。
+6. L3 隐私诱饵：威胁曝光私密视频、公开聊天记录、征信黑名单等。
+7. R1 亲友冒充：冒充亲属、朋友、恋人。
+8. R2 权威冒充：冒充公检法、政府机构、学校、公司领导。
+9. R3 客服/平台冒充：冒充银行、电商、支付工具、运营商客服。
+10. C1 误点击：伪装按钮、透明覆盖层、虚假关闭图标等。
+11. C2 误输入：伪造登录/支付页面、虚假表单。
+12. C3 误识别：SEO投毒、相似域名、仿冒APP图标。
+13. C4 误触发：系统警报循环、倒计时压迫、虚假更新。
+14. C5 远程控制：诱导安装远控软件、伪装技术支持。
+15. OT 其他诈骗：有其他诈骗手段的明确信息但与前14项不同，该项填写1，否则填0。
+16. NS 信息不全：有诈骗发生但缺失细节。
+
+补充：利用新认识的关系承诺获利→ G2；冒充已知亲友进行后续诈骗→ R1
+
+输出格式（严格按模板输出，不得改结构，标签顺序固定为G1,G2,G3,L1,L2,L3,R1,R2,R3,C1,C2,C3,C4,C5,OT,NS）：
+---
+样本ID：{idx}
+标签向量：0或1,0或1,0或1,0或1,0或1,0或1,0或1,0或1,0或1,0或1,0或1,0或1,0或1,0或1,0或1,0或1
+判断依据(一句话)：
+---
+
+现在判断以下文本：
+{text}
+
+请同时根据以下规则生成时间序列标签：
+1.按手法在文本中出现的先后顺序排列，最早出现的排第一。例如 ["G1","R2"]
+2.若两个手法在同一句话或同一个紧密耦合的表述中同时出现（如"我是公安局的，不转账就冻结账户"同时包含 R2 和 L2），用 & 连接，例如 ["R2 & L2", "G1"]。
+3.若顺序无法判断（如信息不足或手法交错复杂），输出 ["unknown"]。
+4.G1包括法律赔偿、退款、和解金等任何直接金钱利益，不限于"刷单返利"等简单表述。
+5.顺序必须基于诈骗实施的自然流程，而不是报道中提及的顺序。比如冒充通常发生在利益承诺之前。
+6.禁止重复与冗余：每个原始标签在时间序列中只能出现一次。如果一个标签已经被包含在 & 组合中（如 R2 & L2 已经包含了 R2 和 L2），则不能再单独列出该标签（即不能再输出单独的 "R2" 或 "L2"）。最终输出的序列中，所有 & 内外的原子标签去重后，必须与输入的已有标签集合完全相等，不能多也不能少。
+
+标签代码解释：
+- G1:财富诱饵，G2:关系诱饵，G3:机会诱饵
+- L1:安全威胁，L2:财产威胁，L3:隐私威胁
+- R1:亲友冒充，R2:权威冒充，R3:客服/平台冒充
+
+时间序列输出格式：
+---
+时间序列：[]
+---</textarea>
+            </div>
+            <div class="modal-buttons">
+                <button class="cancel-button" onclick="closePromptModal()">Cancel</button>
+                <button onclick="savePromptConfig()">Save Prompt</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:5002/api';
+        let currentResults = [];
+        
+        // Load saved configuration
+        function loadConfig() {
+            const savedConfig = localStorage.getItem('apiConfig');
+            if (savedConfig) {
+                try {
+                    const config = JSON.parse(savedConfig);
+                    document.getElementById('apiKey').value = config.apiKey || '';
+                    document.getElementById('apiUrl').value = config.apiUrl || 'https://dashscope.aliyuncs.com/compatible-mode/v1';
+                    document.getElementById('modelName').value = config.modelName || 'qwen-plus';
+                } catch (e) {
+                    console.error('Failed to load config:', e);
+                }
+            }
+        }
+        
+        // Save configuration
+        function saveConfig() {
+            const config = {
+                apiKey: document.getElementById('apiKey').value,
+                apiUrl: document.getElementById('apiUrl').value,
+                modelName: document.getElementById('modelName').value
+            };
+            
+            localStorage.setItem('apiConfig', JSON.stringify(config));
+            alert('Configuration saved successfully!');
+        }
+        
+        // Load prompt configuration
+        function loadPromptConfig() {
+            const savedPrompt = localStorage.getItem('promptConfig');
+            if (savedPrompt) {
+                try {
+                    const promptConfig = JSON.parse(savedPrompt);
+                    document.getElementById('annotationPrompt').value = promptConfig.annotationPrompt || document.getElementById('annotationPrompt').value;
+                } catch (e) {
+                    console.error('Failed to load prompt config:', e);
+                }
+            }
+        }
+        
+        // Save prompt configuration
+        function savePromptConfig() {
+            const promptConfig = {
+                annotationPrompt: document.getElementById('annotationPrompt').value
+            };
+            
+            localStorage.setItem('promptConfig', JSON.stringify(promptConfig));
+            alert('Prompt configuration saved successfully!');
+            closePromptModal();
+        }
+        
+        // Open prompt modal
+        function openPromptModal() {
+            document.getElementById('promptModal').style.display = 'block';
+        }
+        
+        // Close prompt modal
+        function closePromptModal() {
+            document.getElementById('promptModal').style.display = 'none';
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('promptModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('loadingText').style.display = 'block';
+            document.getElementById('progressSection').style.display = 'none';
+        }
+        
+        function showProgress() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('loadingText').style.display = 'none';
+            document.getElementById('progressSection').style.display = 'block';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        function updateProgress(current, total) {
+            const percent = Math.round((current / total) * 100);
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressText').textContent = `${current} / ${total} (${percent}%)`;
+        }
+        
+        function annotateText() {
+            const text = document.getElementById('textInput').value;
+            if (!text.trim()) {
+                alert('Please enter text');
+                return;
+            }
+            
+            const config = {
+                apiKey: document.getElementById('apiKey').value,
+                apiUrl: document.getElementById('apiUrl').value,
+                modelName: document.getElementById('modelName').value,
+                annotationPrompt: document.getElementById('annotationPrompt').value
+            };
+            
+            if (!config.apiKey) {
+                alert('Please configure API key first');
+                return;
+            }
+            
+            // Update step indicator
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step1').classList.add('completed');
+            document.getElementById('step2').classList.add('active');
+            document.getElementById('stepLine').classList.add('completed');
+            
+            showLoading();
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', API_URL + '/annotate', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            
+            xhr.onload = function() {
+                hideLoading();
+                if (xhr.status === 200) {
+                    try {
+                        var data = JSON.parse(xhr.responseText);
+                        displayResults([data]);
+                    } catch (e) {
+                        document.getElementById('resultsList').innerHTML = '<p>Failed to parse data: ' + e.message + '</p>';
+                    }
+                } else {
+                    document.getElementById('resultsList').innerHTML = '<p>Request failed: ' + xhr.status + '</p>';
+                }
+            };
+            
+            xhr.onerror = function() {
+                hideLoading();
+                document.getElementById('resultsList').innerHTML = '<p>Network error</p>';
+            };
+            
+            xhr.send(JSON.stringify({ text: text, config: config }));
+        }
+        
+        function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
+            
+            const config = {
+                apiKey: document.getElementById('apiKey').value,
+                apiUrl: document.getElementById('apiUrl').value,
+                modelName: document.getElementById('modelName').value,
+                annotationPrompt: document.getElementById('annotationPrompt').value
+            };
+            
+            if (!config.apiKey) {
+                alert('Please configure API key first');
+                return;
+            }
+            
+            // 检查是否有缓存
+            const cacheKey = 'upload_cache_' + file.name;
+            const cachedData = localStorage.getItem(cacheKey);
+            
+            if (cachedData) {
+                const cache = JSON.parse(cachedData);
+                if (confirm(`Cache found for this file. Last processed: ${new Date(cache.timestamp).toLocaleString()}. Do you want to resume?`)) {
+                    // 恢复上传
+                    uploadWithCache(file, config, cache);
+                    return;
+                } else {
+                    // 清除缓存
+                    localStorage.removeItem(cacheKey);
+                }
+            }
+            
+            // 新上传
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('config', JSON.stringify(config));
+            
+            // Update step indicator
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step1').classList.add('completed');
+            document.getElementById('step2').classList.add('active');
+            document.getElementById('stepLine').classList.add('completed');
+            
+            showLoading();
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', API_URL + '/upload', true);
+            
+            xhr.onload = function() {
+                hideLoading();
+                if (xhr.status === 200) {
+                    try {
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.error) {
+                            document.getElementById('resultsList').innerHTML = '<p>Error: ' + data.error + '</p>';
+                        } else {
+                            // 清除缓存
+                            localStorage.removeItem(cacheKey);
+                            displayResults(data);
+                        }
+                    } catch (e) {
+                        document.getElementById('resultsList').innerHTML = '<p>Failed to parse data: ' + e.message + '</p>';
+                    }
+                } else {
+                    document.getElementById('resultsList').innerHTML = '<p>Request failed: ' + xhr.status + '</p>';
+                }
+            };
+            
+            xhr.onerror = function() {
+                hideLoading();
+                // 保存缓存
+                const cacheData = {
+                    filename: file.name,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+                document.getElementById('resultsList').innerHTML = '<p>Network error. Cache saved. You can resume later.</p>';
+            };
+            
+            xhr.send(formData);
+        }
+        
+        function uploadWithCache(file, config, cache) {
+            // 恢复上传逻辑
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('config', JSON.stringify(config));
+            formData.append('resume', 'true');
+            
+            // Update step indicator
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step1').classList.add('completed');
+            document.getElementById('step2').classList.add('active');
+            document.getElementById('stepLine').classList.add('completed');
+            
+            showLoading();
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', API_URL + '/upload', true);
+            
+            xhr.onload = function() {
+                hideLoading();
+                if (xhr.status === 200) {
+                    try {
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.error) {
+                            document.getElementById('resultsList').innerHTML = '<p>Error: ' + data.error + '</p>';
+                        } else {
+                            // 清除缓存
+                            const cacheKey = 'upload_cache_' + file.name;
+                            localStorage.removeItem(cacheKey);
+                            displayResults(data);
+                        }
+                    } catch (e) {
+                        document.getElementById('resultsList').innerHTML = '<p>Failed to parse data: ' + e.message + '</p>';
+                    }
+                } else {
+                    document.getElementById('resultsList').innerHTML = '<p>Request failed: ' + xhr.status + '</p>';
+                }
+            };
+            
+            xhr.onerror = function() {
+                hideLoading();
+                document.getElementById('resultsList').innerHTML = '<p>Network error. Cache saved. You can resume later.</p>';
+            };
+            
+            xhr.send(formData);
+        }
+        
+        function displayResults(results) {
+            // Update step indicator
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step2').classList.add('completed');
+            document.getElementById('step3').classList.add('active');
+            
+            const resultsList = document.getElementById('resultsList');
+            const resultsSection = document.getElementById('resultsSection');
+            const previewNote = document.getElementById('previewNote');
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            resultsList.innerHTML = '';
+            
+            // Ensure results is an array
+            const resultsArray = Array.isArray(results) ? results : (results ? [results] : []);
+            currentResults = resultsArray;
+            
+            if (!resultsArray || resultsArray.length === 0) {
+                resultsList.innerHTML = '<p>No annotation results</p>';
+                downloadBtn.disabled = true;
+                return;
+            }
+            
+            downloadBtn.disabled = false;
+            resultsSection.style.display = 'block';
+            
+            // Show preview note if there are many results
+            if (resultsArray.length > 3) {
+                previewNote.textContent = `Showing first 3 of ${resultsArray.length} results. Click "Download Results" to get all data.`;
+            } else {
+                previewNote.textContent = '';
+            }
+            
+            // Show only first 3 results for preview
+            const displayResults = resultsArray.slice(0, 3);
+            
+            for (var i = 0; i < displayResults.length; i++) {
+                var result = displayResults[i];
+                var resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+                
+                // Text content
+                var textElement = document.createElement('div');
+                textElement.innerHTML = '<strong>Text ' + (i + 1) + ':</strong> ' + result.text;
+                resultItem.appendChild(textElement);
+                
+                // 16label annotation results
+                var labelsElement = document.createElement('div');
+                labelsElement.innerHTML = '<strong>16label Annotation:</strong> ';
+                if (result.annotations) {
+                    for (var label in result.annotations) {
+                        if (result.annotations[label] === 1) {
+                            var labelSpan = document.createElement('span');
+                            labelSpan.className = 'label';
+                            labelSpan.textContent = label;
+                            labelsElement.appendChild(labelSpan);
+                        }
+                    }
+                }
+                resultItem.appendChild(labelsElement);
+                
+                // Time series label
+                var timeSeriesElement = document.createElement('div');
+                timeSeriesElement.innerHTML = '<strong>Time Series:</strong> <code>' + (result.time_series || '[]') + '</code>';
+                resultItem.appendChild(timeSeriesElement);
+                
+                resultsList.appendChild(resultItem);
+            }
+        }
+        
+        // Drag and drop upload functionality
+        function initDropZone() {
+            const dropZone = document.getElementById('dropZone');
+            if (!dropZone) return;
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                dropZone.classList.add('active');
+            }
+            
+            function unhighlight() {
+                dropZone.classList.remove('active');
+            }
+            
+            dropZone.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.name.endsWith('.csv') || file.name.endsWith('.xlsx')) {
+                        document.getElementById('fileInput').files = files;
+                        uploadFile();
+                    } else {
+                        alert('Please upload CSV or Excel file');
+                    }
+                }
+            }
+        }
+        
+        // Download results table
+        function downloadResults() {
+            if (currentResults.length === 0) {
+                alert('No results to download');
+                return;
+            }
+            
+            // Build CSV content
+            let csvContent = 'Text,G1,G2,G3,L1,L2,L3,R1,R2,R3,C1,C2,C3,C4,C5,OT,NS,Time Series\n';
+            
+            currentResults.forEach(result => {
+                // Handle commas and newlines in text
+                const text = result.text.replace(/"/g, '""').replace(/\n/g, ' ');
+                let row = `"${text}"`;
+                
+                // 16 labels
+                const labels = ['G1: Wealth Bait', 'G2: Relationship Bait', 'G3: Opportunity Bait', 'L1: Security Threat', 'L2: Property Threat', 'L3: Privacy Threat', 'R1: Relative Impersonation', 'R2: Authority Impersonation', 'R3: Customer Service Impersonation', 'C1: False Click', 'C2: False Input', 'C3: False Identification', 'C4: False Trigger', 'C5: Remote Control', 'OT: Other Fraud', 'NS: Insufficient Information'];
+                
+                labels.forEach(label => {
+                    row += ',' + (result.annotations[label] || 0);
+                });
+                
+                // Time series
+                const timeSeries = (result.time_series || '[]').replace(/"/g, '""');
+                row += `,"${timeSeries}"`;
+                
+                csvContent += row + '\n';
+            });
+            
+            // Create download link
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'annotation_results.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+
+        
+        // 清除配置缓存
+        function clearConfig() {
+            if (confirm('Are you sure you want to clear the configuration cache?')) {
+                localStorage.removeItem('apiConfig');
+                localStorage.removeItem('promptConfig');
+                document.getElementById('apiKey').value = '';
+                document.getElementById('apiUrl').value = 'https://dashscope.aliyuncs.com/compatible-mode/v1';
+                document.getElementById('modelName').value = 'qwen-plus';
+                alert('Configuration cache cleared successfully!');
+            }
+        }
+        
+        // 动态加载显示
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('loadingText').style.display = 'none';
+        }
+        
+        // Initialize
+        function init() {
+            loadConfig();
+            loadPromptConfig();
+            initDropZone();
+        }
+        
+        // Run initialization when page loads
+        window.onload = init;
+    </script>
+</body>
+</html>
